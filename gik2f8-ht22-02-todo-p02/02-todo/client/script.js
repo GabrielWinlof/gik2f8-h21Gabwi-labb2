@@ -83,23 +83,32 @@ function saveTask() {
 function renderList() {
   console.log('rendering');
   api.getAll().then((tasks) => {
+    tasks.sort((a, b)=> {
+        if (a.dueDate < b.dueDate) {
+        return -1;
+      } else if (a.dueDate > b.dueDate) {
+        return 1;
+      } else {
+        return 0;
+      }});
     todoListElement.innerHTML = '';
-    if (tasks && tasks.length > 0) {
+     if (tasks && tasks.length > 0) {
       tasks.forEach((task) => {
         todoListElement.insertAdjacentHTML('beforeend', renderTask(task));
-      });
-    }
-  });
-}
+      }); 
+  }}) 
+  };
+  
 
-function renderTask({ id, title, description, dueDate }) {
+function renderTask({ id, title, description, dueDate , completed}) {
   let html = `
-    <li class="select-none mt-2 py-2 border-b border-amber-300">
+    <li class="select-none mt-2 py-2 border-2 rounded-md text-white  ${completed ? "bg-gradient-to-r from-emerald-900 via-emerald-500 to-emerald-900 rounded-md"  : ""} bg-gradient-to-r from-purple-800 via-violet-900 to-purple-800 border-white">
       <div class="flex items-center">
-        <h3 class="mb-3 flex-1 text-xl font-bold text-pink-800 uppercase">${title}</h3>
+      <input type="checkbox" ${completed ? "checked "  : ""} onclick="checkBox(${id})" id="checkBox${id}" name="checkBox" class="checkBox mr-4 mt-6">
+        <h3 class="mb-3 flex-1 text-xl font-bold text-white uppercase">${title}</h3>
         <div>
-          <span>${dueDate}</span>
-          <button onclick="deleteTask(${id})" class="inline-block bg-amber-500 text-xs text-amber-900 border border-white px-3 py-1 rounded-md ml-2">Ta bort</button>
+          <span>${dueDate }</span>
+          <button onclick="deleteTask(${id})" class="inline-block bg-gradient-to-r from-purple-800 via-violet-900 to-purple-800 text-xs text-white border border-white px-3 py-1 rounded-md ml-2">Ta bort</button>
         </div>
       </div>`;
   description &&
@@ -108,8 +117,20 @@ function renderTask({ id, title, description, dueDate }) {
   `);
   html += `
     </li>`;
-
+    
   return html;
+}
+
+
+  function checkBox(id){
+  const checkBox = document.getElementById(`checkBox${id}`);
+if (checkBox.checked){
+  const complete = {"completed": true}
+  api.update(id, complete).then((data) => renderList()); 
+} else if (checkBox.checked == false){
+  const incomplete = {"completed": false}
+  api.update(id, incomplete).then((data) => renderList());
+}
 }
 
 function deleteTask(id) {
@@ -119,3 +140,13 @@ function deleteTask(id) {
 }
 
 renderList();
+
+
+
+
+
+
+
+
+
+
